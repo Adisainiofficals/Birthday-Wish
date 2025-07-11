@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Birthday Puzzle 🧩</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script&family=Poppins&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to right, #1f4037, #99f2c8);
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      text-align: center;
+      color: #222;
+    }
+
+    h2 {
+      font-family: 'Dancing Script', cursive;
+      font-size: 3rem;
+      color: #ffda77;
+      margin-top: 50px;
+    }
+
+    canvas {
+      margin-top: 30px;
+      border: 4px solid white;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+      width: 90%;
+      max-width: 400px;
+      height: auto;
+      touch-action: manipulation;
+    }
+
+    #message {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: #fff;
+    }
+
+    .puzzle-tip {
+      font-size: 0.85rem;
+      color: aquamarine;
+      text-shadow:
+        -1px -1px 0 #000,
+         1px -1px 0 #000,
+        -1px  1px 0 #000,
+         1px  1px 0 #000;
+      margin-top: 15px;
+      padding: 0 20px;
+      max-width: 400px;
+      font-style: italic;
+    }
+
+    .highlight {
+      outline: 3px solid #40e0d0; /* turquoise glow */
+      outline-offset: -3px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Solve the Puzzle !<br>🧩</h2>
+  <canvas id="puzzleCanvas" width="400" height="400"></canvas>
+  <p class="puzzle-tip">📝 Tip: Tap the piece you want to move, then tap the spot where you want it to go.</p>
+  <div id="message"></div>
+
+<script>
+  const canvas = document.getElementById("puzzleCanvas");
+  const ctx = canvas.getContext("2d");
+  const img = new Image();
+  img.src = "assets/jigsaw-image.jpg";
+
+  const size = 3;
+  const tiles = [];
+  let tileSize;
+  let selected = null;
+
+  img.onload = () => {
+    // Match canvas to image actual size
+    canvas.width = img.width;
+    canvas.height = img.height;
+
+    tileSize = canvas.width / size;
+
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        tiles.push({
+          sx: x * tileSize,
+          sy: y * tileSize,
+          dx: x * tileSize,
+          dy: y * tileSize
+        });
+      }
+    }
+
+    shuffleTiles();
+    draw();
+  };
+
+  function shuffleTiles() {
+    tiles.sort(() => Math.random() - 0.5);
+    tiles.forEach((tile, i) => {
+      tile.dx = (i % size) * tileSize;
+      tile.dy = Math.floor(i / size) * tileSize;
+    });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    tiles.forEach(tile => {
+      ctx.drawImage(img, tile.sx, tile.sy, tileSize, tileSize, tile.dx, tile.dy, tileSize, tileSize);
+
+      if (selected && selected === tile) {
+        ctx.strokeStyle = '#40e0d0';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(tile.dx, tile.dy, tileSize, tileSize);
+      }
+    });
+  }
+
+  canvas.addEventListener("click", onClick);
+
+  function onClick(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+
+    const clicked = tiles.find(tile =>
+      x > tile.dx && x < tile.dx + tileSize &&
+      y > tile.dy && y < tile.dy + tileSize
+    );
+
+    if (!clicked) return;
+
+    if (!selected) {
+      selected = clicked;
+    } else {
+      const tempX = selected.dx;
+      const tempY = selected.dy;
+      selected.dx = clicked.dx;
+      selected.dy = clicked.dy;
+      clicked.dx = tempX;
+      clicked.dy = tempY;
+      selected = null;
+    }
+
+    draw();
+    checkSolved();
+  }
+
+  function checkSolved() {
+    const solved = tiles.every(tile => tile.sx === tile.dx && tile.sy === tile.dy);
+    if (solved) {
+      document.getElementById("message").innerText = "🎉 You solved it!";
+      setTimeout(() => {
+        window.location.href = "success.html";
+      }, 1500);
+    }
+  }
+</script>
+</body>
+</html>

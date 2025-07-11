@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Surprise Unlocked 🎉</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&family=Dancing+Script&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to right, #e0f7fa, #fce4ec);
+      color: #222;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 60px 20px;
+    }
+
+    .title2 {
+      font-family: 'Dancing Script', cursive;
+      font-size: 3rem;
+      color: #d81b60;
+    }
+
+    .surprise-img {
+      width: 300px;
+      max-width: 90%;
+      margin: 30px auto;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    }
+
+    .final-msg {
+      font-size: 1.2rem;
+      margin-top: 30px;
+      line-height: 1.7;
+    }
+
+    .typewriter-box {
+      margin-top: 40px;
+    }
+
+    .typewriter-text {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #444;
+      display: inline-block;
+      white-space: pre-wrap;
+      text-align: center;
+    }
+
+    .coder-caption {
+      font-size: 0.9rem;
+      color: #555;
+      margin-top: 15px;
+      opacity: 0.8;
+    }
+
+    .lyrics-box {
+  margin-top: 40px;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  font-size: 1.1rem;
+  font-style: italic;
+  min-height: 60px;
+  word-wrap: break-word;
+  max-width: 100%;
+
+  /* Smooth animation */
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.lyrics-box.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+    .restart-btn {
+      margin-top: 40px;
+      background-color: #ff6f91;
+      color: white;
+      font-size: 1.1rem;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+
+    .restart-btn:hover {
+      background-color: #ff477e;
+    }
+
+    audio {
+      margin-top: 20px;
+    }
+    
+    .floating-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.floating-shape {
+  position: absolute;
+  bottom: -40px;
+  font-size: 1.5rem;
+  opacity: 0.7;
+  animation: floatUp 6s linear infinite;
+}
+
+@keyframes floatUp {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-100vh) scale(1.2);
+    opacity: 0;
+  }
+}
+  </style>
+</head>
+<body onload="launchConfetti()">
+  <div class="container">
+     <div class="floating-container" id="floatingContainer"></div>
+    <h2 class="title2">You made it 🎉</h2>
+
+    <img src="assets/final-card.jpg" alt="Surprise" class="surprise-img" />
+
+    <p class="final-msg">
+      Just like in music...<br />
+      you always hit the right notes 🎶<br />
+      Stay awesome & keep spreading magic ✨
+    </p>
+
+    <div class="typewriter-box">
+      <p id="typewriter" class="typewriter-text"></p>
+      <p class="coder-caption">— from your happy coder friend 💻🤍</p>
+    </div>
+
+    <!-- Manual play music -->
+    <audio controls id="song" autoplay>
+      <source src="assets/Girl I Need You.mp3" type="audio/mpeg" />
+    </audio>
+
+    <!-- Lyrics -->
+    <div class="lyrics-box" id="lyrics">🎵 Loading lyrics...</div>
+
+    <!-- Replay button -->
+    <button onclick="location.href='index.html'" class="restart-btn">🎁 Replay Surprise</button>
+  </div>
+
+  <script>
+    function launchConfetti() {
+      confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
+    }
+
+    const typewriterText = `This wasn't a big gift... just something to make your day better 😌\nHappiest Birthday 🩷`;
+    let i = 0;
+    function animateText() {
+      const el = document.getElementById("typewriter");
+      if (i < typewriterText.length) {
+        el.innerHTML += typewriterText.charAt(i) === "\n" ? "<br>" : typewriterText.charAt(i);
+        i++;
+        setTimeout(animateText, 50);
+      }
+    }
+    animateText();
+
+    const audio = document.getElementById("song");
+    const lyricsBox = document.getElementById("lyrics");
+    let lyrics = [];
+
+    fetch("assets/lyrics.lrc")
+      .then(response => response.text())
+      .then(text => {
+        lyrics = parseLRC(text);
+      });
+
+    function parseLRC(lrc) {
+      return lrc.split('\n').map(line => {
+        const match = line.match(/\[(\d+):(\d+\.\d+)\](.*)/);
+        if (!match) return null;
+        const min = parseInt(match[1], 10);
+        const sec = parseFloat(match[2]);
+        const time = min * 60 + sec;
+        const text = match[3].trim();
+        return { time, text };
+      }).filter(line => line);
+    }
+
+    audio.addEventListener("timeupdate", () => {
+  const current = audio.currentTime;
+  for (let i = lyrics.length - 1; i >= 0; i--) {
+    if (current >= lyrics[i].time) {
+      lyricsBox.textContent = lyrics[i].text;
+      lyricsBox.classList.remove('show');
+      void lyricsBox.offsetWidth; // triggers reflow for animation
+      lyricsBox.classList.add('show');
+      break;
+    }
+  }
+});
+
+const floatingContainer = document.getElementById("floatingContainer");
+
+function createFloatingEffect() {
+  const icons = ["💖", "✨", "🎵", "🌸", "💫"];
+  const shape = document.createElement("div");
+  shape.classList.add("floating-shape");
+  shape.textContent = icons[Math.floor(Math.random() * icons.length)];
+  shape.style.left = Math.random() * 100 + "vw";
+  shape.style.fontSize = Math.random() * 16 + 16 + "px";
+  floatingContainer.appendChild(shape);
+
+  setTimeout(() => {
+    shape.remove();
+  }, 6000);
+}
+
+let floatingInterval;
+
+audio.addEventListener("play", () => {
+  floatingInterval = setInterval(createFloatingEffect, 300);
+});
+
+audio.addEventListener("pause", () => {
+  clearInterval(floatingInterval);
+});
+
+audio.addEventListener("ended", () => {
+  clearInterval(floatingInterval);
+});
+  </script>
+</body>
+</html>
